@@ -937,9 +937,38 @@ function endQuiz() {
   setTimeout(() => {
     document.body.innerHTML = "<h2 style='text-align:center;padding:40px;'>Test completato. Grazie.</h2>";
   }, 3000);
-} // end of endQuiz()
+} // endQuiz
 
+// Mostra risultato per 5 secondi e poi chiude
+setTimeout(() => {
+  document.body.innerHTML = "<h2 style='text-align:center;padding:40px;'>Test completato. Grazie.</h2>";
+}, 5000);
+
+// Blocco riapertura
+localStorage.setItem("quiz_completed", "true");
+}
+
+// Avvia quiz
 startBtn.addEventListener("click", startQuiz);
+
+/* Protezione anti-modifica / anti-copia */
+
+// Blocca tasto destro
+document.addEventListener("contextmenu", e => e.preventDefault());
+
+// Blocca F12, Ctrl+U, Ctrl+Shift+I, Ctrl+R
+document.addEventListener("keydown", e => {
+  if (
+    e.key === "F12" ||
+    (e.ctrlKey && e.shiftKey && e.key.toUpperCase() === "I") ||
+    (e.ctrlKey && e.key.toUpperCase() === "U") ||
+    (e.ctrlKey && e.key.toUpperCase() === "R")
+  ) {
+    e.preventDefault();
+    alert("Funzione disabilitata durante il test.");
+  }
+});
 </script>
 </body>
 </html>
+
