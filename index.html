@@ -927,19 +927,32 @@ startBtn.addEventListener("click", startQuiz);
 
 /* Protezione anti-modifica / anti-copia */
 document.addEventListener("contextmenu", e => e.preventDefault());
+
 document.addEventListener("keydown", e => {
+  // Blocca ispezione, sorgente, refresh
   if (
-    e.key === "F12" ||
-    (e.ctrlKey && e.shiftKey && e.key.toUpperCase() === "I") ||
-    (e.ctrlKey && e.key.toUpperCase() === "U") ||
-    (e.ctrlKey && e.key.toUpperCase() === "R")
-  ) { 
-    e.preventDefault(); 
+    e.key === "F12" ||                                      // DevTools
+    (e.ctrlKey && e.shiftKey && e.key.toUpperCase() === "I") || // Ctrl+Shift+I
+    (e.ctrlKey && e.key.toUpperCase() === "U") ||          // Ctrl+U (view source)
+    (e.ctrlKey && e.key.toUpperCase() === "R") ||          // Ctrl+R (refresh)
+    (e.key === "F5") ||                                     // F5 refresh
+    (e.metaKey && e.key.toUpperCase() === "R") ||          // Cmd+R (Mac refresh)
+    (e.altKey && e.key.toUpperCase() === "R")              // Alt+R refresh
+  ) {
+    e.preventDefault();
     alert("Funzione disabilitata durante il test.");
+  }
+});
+
+// Blocca tasto refresh del mouse (Mouse4 indietro / refresh)
+document.addEventListener("mousedown", e => {
+  if (e.button === 3 || e.button === 4) {
+    e.preventDefault();
   }
 });
 </script>
 </body>
 </html>
+
 
 
