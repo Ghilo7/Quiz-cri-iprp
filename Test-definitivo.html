@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quiz Regolamento CRI - IPRP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --cri-red: #c8102e;
+      --cri-red-dark: #8b0a1f;
+      --bg: #f5f5f5;
+      --card-bg: #ffffff;
+      --text: #222222;
+      --muted: #777777;
+      --success: #1b873f;
+      --danger: #c0392b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top left, #ffe5e9, #f5f5f5);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: var(--text);
+    }
+
+    .quiz-container {
+      background: var(--card-bg);
+      max-width: 800px;
+      width: 100%;
+      border-radius: 16px;
+      padding: 24px 24px 28px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .quiz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #e3e3e3;
+      padding-bottom: 12px;
+    }
+
+    .quiz-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--cri-red-dark);
+    }
+
+    .quiz-subtitle {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .status-badges {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f0f0f0;
+      color: var(--muted);
+    }
+
+    .badge-time {
+      background: #ffe9ec;
+      color: var(--cri-red-dark);
+    }
+
+    .badge-question {
+      background: #e9f5ff;
+      color: #114b7a;
+    }
+
+    .timer-circle {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 3px solid var(--cri-red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .timer-warning {
+      border-color: #e67e22;
+      color: #e67e22;
+    }
+
+    .timer-danger {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .question-text {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    .answers-list {
+      list-style: none;
+      display: grid;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .answer-btn {
+      width: 100%;
+      text-align: left;
+      border-radius: 999px;
+      border: 1px solid #dddddd;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      background: #ffffff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.16s ease;
+    }
+
+    .answer-btn:hover {
+      border-color: var(--cri-red);
+      box-shadow: 0 0 0 2px rgba(200, 16, 46, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .answer-btn.disabled {
+      opacity: 0.7;
+      cursor: default;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .answer-label {
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+
+    .answer-text {
+      flex: 1;
+    }
+
+    .feedback {
+      min-height: 0;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: transparent; /* nascosto durante il test */
+    }
+
+    .quiz-footer {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-top: 4px;
+      min-height: 32px;
+    }
+
+    .btn {
+      border-radius: 999px;
+      padding: 8px 16px;
+      border: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.16s ease;
+    }
+
+    .btn-primary {
+      background: var(--cri-red);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: var(--cri-red-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: default;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .btn-next-hidden {
+      display: none; /* nasconde il bottone "Prossima domanda" */
+    }
+
+    .start-screen,
+    .result-screen {
+      text-align: center;
+      padding: 20px 10px 10px;
+    }
+
+    .start-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--cri-red-dark);
+    }
+
+    .start-text {
+      font-size: 0.95rem;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .result-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .result-score {
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+    }
+
+    .result-detail {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 16px;
+      white-space: pre-line;
+    }
+
+    .result-summary-box {
+      margin-top: 8px;
+      text-align: left;
+    }
+
+    .result-summary-label {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .result-summary-textarea {
+      width: 100%;
+      min-height: 90px;
+      border-radius: 8px;
+      border: 1px solid #dddddd;
+      padding: 8px;
+      font-size: 0.85rem;
+      resize: vertical;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      .quiz-container {
+        padding: 18px 16px 22px;
+      }
+      .quiz-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .quiz-title {
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <div class="quiz-header">
+      <div>
+        <div class="quiz-title">Quiz Regolamento CRI – IPRP</div>
+        <div class="quiz-subtitle">
+          20 domande · 12 secondi a domanda · Max 3 errori per superare il test
+        </div>
+      </div>
+      <div class="status-badges">
+        <div class="badge badge-question" id="questionCounterBadge">
+          Domanda: 0 / 20
+        </div>
+        <div class="badge badge-time">
+          ⏱ <span>Tempo</span>
+          <div class="timer-circle" id="timerCircle">12</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Schermata iniziale -->
+    <div class="start-screen" id="startScreen">
+      <div class="start-title">Sei pronto a diventare un medico modello?</div>
+      <div class="start-text">
+        Rispondi alle domande sul regolamento della Croce Rossa Italiana in città.<br />
+        Hai <strong>12 secondi</strong> per ogni domanda. <br />
+        Per superare il test puoi fare al massimo <strong>3 errori</strong>.<br />
+        Al 4° errore il test terminerà in automatico con esito <strong>NON SUPERATO</strong>.
+      </div>
+      <button class="btn btn-primary" id="startBtn">Inizia il quiz</button>
+    </div>
+
+    <!-- Area quiz -->
+    <div id="quizArea" class="hidden">
+      <div class="question-text" id="questionText"></div>
+      <ul class="answers-list" id="answersList"></ul>
+      <div class="feedback" id="feedback"></div>
+
+      <div class="quiz-footer">
+        <!-- bottone nascosto, il quiz avanza da solo -->
+        <button class="btn btn-primary btn-next-hidden" id="nextBtn" type="button" disabled>
+          Prossima domanda →
+        </button>
+      </div>
+    </div>
+
+    <!-- Schermata risultato -->
+    <div class="result-screen hidden" id="resultScreen">
+      <div class="result-title">Quiz completato!</div>
+      <div class="result-score" id="finalScoreText"></div>
+      <div class="result-detail" id="finalDetailText"></div>
+
+      <div class="result-summary-box">
+        <div class="result-summary-label">
+          Testo risultato pronto da copiare e incollare su Discord:
+        </div>
+        <textarea id="resultSummary" class="result-summary-textarea" readonly></textarea>
+        <div style="margin-top: 8px; display:flex; justify-content:flex-end; gap:8px;">
+          <button class="btn btn-ghost" id="copyResultBtn" type="button">Copia risultato</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // CONFIG
+    const QUESTION_TIME = 12; // secondi per ogni domanda
+    const TOTAL_QUESTIONS = 20; // quante domande mostrare per test
+    const MAX_ERRORS = 3; // numero massimo di errori per superare
+    const WEBHOOK_URL = "https://discord.com/api/webhooks/1442576209337782465/Pb8U60s6byY0eW8BliGpO3bxE-jccNDV0Mpv4amP-UPvHXGP0lTUg6SLfdnvKProW0AV"; // ← qui metterai il tuo
+	
+    // Pool domande
+    const allQuestions = [
+      // BIBBIA / NEUTRALITÀ
+      {
+        question: "La Croce Rossa in città è considerata:",
+        options: [
+          "Una fazione militare",
+          "Una fazione legale",
+          "Una fazione neutrale",
+          "Una fazione d’emergenza che può schierarsi"
+        ],
+        correctIndex: 2
+      },
+      {
+        question: "Cosa significa che la Croce Rossa è una fazione NEUTRALE?",
+        options: [
+          "Che non può parlare con le altre fazioni",
+          "Che non parteggia per nessuno e assiste tutti",
+          "Che può schierarsi solo con le FDO",
+          "Che non può uscire dall’ospedale"
+        ],
+        correctIndex: 1
+      },
+      {
+        question: "Quando un medico può intervenire durante un’azione in corso?",
+        options: [
+          "Subito, se vede un ferito a terra",
+          "Quando riceve qualunque chiamata",
+          "Solo quando l’azione è effettivamente terminata",
+          "Quando glielo chiede una delle fazioni coinvolte"
+        ],
+        correctIndex: 2
+      },
+      {
+        question: "Durante un’AZIONE IN CORSO l’operatore sanitario deve mantenere una distanza minima di:",
+        options: ["300 metri", "100 metri", "50 metri", "Non c’è distanza minima"],
+        correctIndex: 0
+      },
+      {
+        question: "Chi deve essere rianimato per primo dopo un’azione conclusa?",
+        options: [
+          "Il primo che capita",
+          "Chi urla più forte",
+          "La fazione vincente",
+          "Sempre e solo le Forze dell’Ordine"
+        ],
+        correctIndex: 2
+      },
+      {
+        question: "Quando un medico viene puntato o minacciato con un’arma deve:",
+        options: [
+          "Ignorare la minaccia perché è neutrale",
+          "Continuare a curare come se nulla fosse",
+          "Simulare paura e fare correttamente RP",
+          "Andare subito in ospedale"
+        ],
+        correctIndex: 2
+      },
+
+      // CODICE NERO
+      {
+        question: "In quali casi un paziente è considerato CODICE NERO secondo il regolamento?",
+        options: [
+          "Quando ha perso molto sangue",
+          "Quando la causa di morte è annegamento o esplosione",
+          "Quando è stato colpito da arma da fuoco a distanza ravvicinata",
+          "Quando cade da una scala"
+        ],
+        correctIndex: 1
+      },
+      {
+        question: "Cosa può fare il medico con un paziente in CODICE NERO?",
+        options: [
+          "Provare comunque la rianimazione",
+          "Lasciarlo dove si trova",
+          "Trasportarlo in obitorio senza rianimarlo",
+          "Portarlo in sala operatoria"
+        ],
+        correctIndex: 2
+      },
+{
+  question: "In caso di annegamento o esplosione, quale codice sanitario si applica?",
+  options: [
+    "Codice Rosso",
+    "Codice Giallo",
+    "Codice Nero",
+    "Codice Verde"
+  ],
+  correctIndex: 2
+},
+
+      // SERVIZIO / FUORI SERVIZIO
+      {
+        question: "Quando NON si è in servizio è:",
+        options: [
+          "Consentito rianimare ma non vendere bende",
+          "Vietato rianimare",
+          "Consentito tutto se in divisa",
+          "Consentito usare solo l’AutoMedica"
+        ],
+        correctIndex: 1
+      },
+      {
+        question: "Per rispondere ad una chiamata è obbligatorio:",
+        options: [
+          "Essere solo in radio 118",
+          "Avere almeno un collega collegato",
+          "Avere la divisa 118 e un mezzo di soccorso",
+          "Essere in borghese per non dare nell’occhio"
+        ],
+        correctIndex: 2
+      },
+      {
+        question: "Fuori servizio si possono usare i mezzi di soccorso?",
+        options: [
+          "No, non è mai consentito",
+          "Solo se si è medici",
+          "Sì ma senza accendere sirene",
+          "Solo per accompagnare amici"
+        ],
+        correctIndex: 0
+      },
+      {
+        question: "Per rimanere in città ma NON lavorare (fuori servizio) cosa bisogna fare?",
+        options: [
+          "Niente, basta non andare in ospedale",
+          "Compilare il modulo fuori-servizio e attendere l’esito",
+          "Scrivere un messaggio in radio",
+          "Togliersi la divisa e basta"
+        ],
+        correctIndex: 1
+      },
+      {
+        question: "Se un operatore non compila il modulo FUORI SERVIZIO e viene trovato in giro:",
+        options: [
+          "Non succede nulla",
+          "Riceve un premio",
+          "È soggetto a una sanzione interna",
+          "Viene spostato di reparto"
+        ],
+        correctIndex: 2
+      },
+      {
+        question: "In caso di assenza dalla città per più di 72 ore:",
+        options: [
+          "Non serve fare nulla",
+          "Bisogna compilare il modulo assenze sull’applicativo",
+          "Bisogna avvisare un collega in privato",
+          "Basta uscire dal servizio in ospedale"
+        ],
+        correctIndex: 1
+      },
+
+      // LICENZIAMENTO / PROMOZIONI
+      {
+        question: "Dal giorno di assunzione ci si può licenziare dopo almeno:",
+        options: ["2 giorni", "3 giorni", "5 giorni", "7 giorni"],
+        correctIndex: 2
+      },
+      {
+        question: "Dopo il licenziamento, in quanti giorni si può rientrare in Croce Rossa Italiana?",
+        options: ["3 giorni", "5 giorni", "7 giorni", "14 giorni"],
+        correctIndex: 2
+      },
+
+
+      // RADIO E CHIAMATE
+      {
+        question: "Durante il servizio è obbligatorio essere:",
+        options: [
+          "In un canale Discord qualsiasi",
+          "Nel canale radio 118 corretto",
+          "Solo sul telefono",
+          "In silenzio radio totale"
+        ],
+        correctIndex: 1
+      },
+      {
+        question: "Una delle regole base della radio è:",
+        options: [
+          "Parlare tutti insieme",
+          "Usare la radio solo per fare battute",
+          "Comunicazioni brevi, precise e inerenti al servizio",
+          "Non rispondere ai check radio"
+        ],
+        correctIndex: 2
+      },
+
+      // AMBULANZA E RIANIMAZIONI
+      {
+        question: "Durante il pattugliamento in ambulanza, come vanno tenuti i dispositivi luminosi?",
+        options: [
+          "Sirene e lampeggianti sempre accesi",
+          "Solo sirene accese",
+          "Lampeggianti fissi accesi e sirene spente",
+          "Tutto spento finché non c’è un morto"
+        ],
+        correctIndex: 2
+      },
+      {
+        question: "In codice radio, “Victor” indica:",
+        options: [
+          "Il medico di turno",
+          "L’ambulanza",
+          "L’AutoMedica",
+          "L’eliambulanza"
+        ],
+        correctIndex: 1
+      },
+      {
+        question: "In codice radio, “Mike” indica:",
+        options: [
+          "L’ambulanza",
+          "La Polizia",
+          "L’AutoMedica",
+          "Il Pronto Soccorso"
+        ],
+        correctIndex: 2
+      },
+
+      // REGOLAMENTO GENERALE
+      {
+        question: "Chi può utilizzare l’elisoccorso Pegaso 21?",
+        options: [
+          "Chiunque sia in servizio",
+          "Solo la Dirigenza",
+          "Solo operatori qualificati con brevetto Pegaso",
+          "Solo i Primari"
+        ],
+        correctIndex: 2
+      },
+{
+  question: "L’uniforme è obbligatoria durante:",
+  options: [
+    "Solo durante le rianimazioni",
+    "Ogni volta che si è in servizio",
+    "Solo in ospedale",
+    "Solo se c’è un responsabile"
+  ],
+  correctIndex: 1
+},
+      {
+        question: "Ai gradi sotto il medico è vietato:",
+        options: [
+          "Vendere bende, farmaci e fare prescrizioni",
+          "Guidare l’ambulanza",
+          "Usare la radio",
+          "Stare in pronto soccorso"
+        ],
+        correctIndex: 0
+      },
+      {
+        question: "Gli operatori della Croce Rossa, riguardo ai fatti visti in servizio, possono:",
+        options: [
+          "Testimoniare liberamente in tribunale",
+          "Registrare tutto e pubblicarlo",
+          "Non possono testimoniare i fatti accaduti durante il servizio",
+          "Parlare solo con i colleghi"
+        ],
+        correctIndex: 2
+      },
+      {
+        question: "Il medico con fedina penale sporcata a seguito di azioni illegali:",
+        options: [
+          "Viene semplicemente richiamato",
+          "Viene spostato di reparto",
+          "Subisce sospensione di 24 ore",
+          "Viene licenziato direttamente"
+        ],
+        correctIndex: 3
+      },
+      {
+        question: "È possibile richiedere soldi per la rianimazione?",
+        options: [
+          "Sì, sempre",
+          "Sì, ma solo per i civili",
+          "No, la rianimazione è gratuita",
+          "Solo se lo decide il Direttore Generale"
+        ],
+        correctIndex: 2
+      },
+      {
+        question: "Quando è possibile far pagare 750€ tramite fattura?",
+        options: [
+          "Per ogni visita in ospedale",
+          "Per la vendita del cerotto",
+          "Per ogni rianimazione",
+          "Per ogni trasporto in ambulanza"
+        ],
+        correctIndex: 1
+      },
+{
+  question: "Chi  paga il cerotto?",
+  options: [
+    "Tutti tranne FDO, CRI, VVFF",
+    "Il medico di turno",
+    "Lo Stato",
+    "Nessuno, è gratuito"
+  ],
+  correctIndex: 0
+},
+      {
+        question: "In servizio è consentito portare:",
+        options: [
+          "Qualsiasi arma da fuoco",
+          "Solo pistola d’ordinanza",
+          "Solo armi bianche non da taglio",
+          "Nessuna arma di nessun tipo, nemmeno bianche"
+        ],
+        correctIndex: 2
+      },
+      {
+        question: "In servizio, riguardo l’abbigliamento, è:",
+        options: [
+          "Consentito indossare maschere e cappelli che coprono il volto",
+          "Consentito qualsiasi outfit",
+          "Vietato coprire il volto; obbligatori gli scarponi antinfortunistici",
+          "Obbligatorio avere sempre casco tattico"
+        ],
+        correctIndex: 2
+      }
+    ];
+
+    // Stato
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let answeredQuestions = 0;
+    let timer = null;
+    let timeLeft = QUESTION_TIME;
+    let hasAnsweredCurrent = false;
+    let failureQuestionNumber = null;
+
+    // Elementi DOM
+    const startScreen = document.getElementById("startScreen");
+    const startBtn = document.getElementById("startBtn");
+    const quizArea = document.getElementById("quizArea");
+    const resultScreen = document.getElementById("resultScreen");
+    const questionText = document.getElementById("questionText");
+    const answersList = document.getElementById("answersList");
+    const feedbackEl = document.getElementById("feedback");
+    const nextBtn = document.getElementById("nextBtn");
+    const questionCounterBadge = document.getElementById("questionCounterBadge");
+    const timerCircle = document.getElementById("timerCircle");
+    const finalScoreText = document.getElementById("finalScoreText");
+    const finalDetailText = document.getElementById("finalDetailText");
+    const resultSummary = document.getElementById("resultSummary");
+    const copyResultBtn = document.getElementById("copyResultBtn");
+
+    function shuffleArray(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function startQuiz() {
+      const shuffled = shuffleArray(allQuestions);
+      questions = shuffled.slice(0, TOTAL_QUESTIONS);
+
+      currentQuestionIndex = 0;
+      score = 0;
+      answeredQuestions = 0;
+      failureQuestionNumber = null;
+
+      startScreen.classList.add("hidden");
+      resultScreen.classList.add("hidden");
+      quizArea.classList.remove("hidden");
+
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      clearTimer();
+      hasAnsweredCurrent = false;
+      feedbackEl.textContent = "";
+      feedbackEl.className = "feedback";
+
+      const q = questions[currentQuestionIndex];
+      questionText.textContent = q.question;
+      questionCounterBadge.textContent = `Domanda: ${
+        currentQuestionIndex + 1
+      } / ${questions.length}`;
+
+      answersList.innerHTML = "";
+
+      q.options.forEach((opt, index) => {
+        const li = document.createElement("li");
+        const btn = document.createElement("button");
+        btn.className = "answer-btn";
+        btn.dataset.index = index;
+
+        const label = document.createElement("div");
+        label.className = "answer-label";
+        label.textContent = String.fromCharCode(65 + index);
+
+        const span = document.createElement("div");
+        span.className = "answer-text";
+        span.textContent = opt;
+
+        btn.appendChild(label);
+        btn.appendChild(span);
+
+        btn.addEventListener("click", () => handleAnswer(index));
+
+        li.appendChild(btn);
+        answersList.appendChild(li);
+      });
+
+      timeLeft = QUESTION_TIME;
+      updateTimerDisplay();
+      startTimer();
+    }
+
+    function handleAnswer(selectedIndex) {
+      if (hasAnsweredCurrent) return;
+      hasAnsweredCurrent = true;
+      clearTimer();
+      answeredQuestions++;
+
+      const q = questions[currentQuestionIndex];
+      const correctIndex = q.correctIndex;
+
+      if (selectedIndex === correctIndex) {
+        score++;
+      }
+
+      const errors = answeredQuestions - score;
+      if (errors > MAX_ERRORS) {
+        if (failureQuestionNumber === null) {
+          failureQuestionNumber = currentQuestionIndex + 1;
+        }
+        endQuiz();
+        return;
+      }
+
+      goToNextQuestion();
+    }
+
+    function handleTimeout() {
+      if (hasAnsweredCurrent) return;
+      hasAnsweredCurrent = true;
+      answeredQuestions++;
+      clearTimer();
+
+      // timeout = errore
+      const errors = answeredQuestions - score;
+      if (errors > MAX_ERRORS) {
+        if (failureQuestionNumber === null) {
+          failureQuestionNumber = currentQuestionIndex + 1;
+        }
+        endQuiz();
+        return;
+      }
+
+      goToNextQuestion();
+    }
+
+    function startTimer() {
+      timer = setInterval(() => {
+        timeLeft--;
+        if (timeLeft <= 0) {
+          updateTimerDisplay();
+          handleTimeout();
+        } else {
+          updateTimerDisplay();
+        }
+      }, 1000);
+    }
+
+    function clearTimer() {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    }
+
+    function updateTimerDisplay() {
+      timerCircle.textContent = timeLeft;
+      timerCircle.classList.remove("timer-warning", "timer-danger");
+
+      if (timeLeft <= 5) {
+        timerCircle.classList.add("timer-danger");
+      } else if (timeLeft <= 10) {
+        timerCircle.classList.add("timer-warning");
+      }
+    }
+
+    function goToNextQuestion() {
+      if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex++;
+        loadQuestion();
+      } else {
+        endQuiz();
+      }
+    }
+
+function sendResultToDiscord(summaryText) {
+  fetch(WEBHOOK_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      content: "📝 **RISULTATO TEST CANDIDATO**\n" + summaryText
+    })
+  }).catch(err => console.error("Webhook error:", err));
+}
+
+function endQuiz() {
+  clearTimer();
+  quizArea.classList.add("hidden");
+  resultScreen.classList.remove("hidden");
+
+  const totalAnswered = answeredQuestions;
+  const totalPlanned = questions.length;
+  const errors = totalAnswered - score;
+  const percentage = totalAnswered > 0 ? Math.round((score / totalAnswered) * 100) : 0;
+  const passed = errors <= MAX_ERRORS && totalAnswered === totalPlanned;
+
+  nextBtn.disabled = true;
+
+  finalScoreText.textContent = `Corrette: ${score} su ${totalAnswered} · Errori: ${errors}`;
+
+  let giudizio = "";
+  if (!passed) {
+    const whereText = failureQuestionNumber
+      ? `Hai raggiunto il 4° errore alla domanda n. ${failureQuestionNumber}.`
+      : "";
+    giudizio = `ESITO: NON SUPERATO ❌\n${whereText}`;
+  } else if (percentage === 100) {
+    giudizio = "ESITO: SUPERATO ✅\nPerfetto, conosci il regolamento alla perfezione.";
+  } else if (percentage >= 80) {
+    giudizio = "ESITO: SUPERATO ✅\nOttimo lavoro, conosci molto bene il regolamento.";
+  } else {
+    giudizio = "ESITO: SUPERATO ✅\nConsigliato un ripasso di alcune parti del regolamento.";
+  }
+
+  // Genera risultato finale
+  let summaryText =
+    "🧪 RISULTATO QUIZ REGOLAMENTO CRI - IPRP\n" +
+    `Corrette: ${score}/${totalAnswered}\n` +
+    `Errori: ${errors}\n` +
+    `Percentuale: ${percentage}%\n` +
+    `Esito: ${passed ? "SUPERATO" : "NON SUPERATO"}\n`;
+
+  if (!passed && failureQuestionNumber) {
+    summaryText += `⚠️ 4° errore alla domanda n. ${failureQuestionNumber}\n`;
+  }
+
+  // Invia messaggio su Discord
+  sendResultToDiscord(summaryText);
+
+  // Blocca riapertura (monouso)
+  localStorage.setItem("quiz_completed", "true");
+
+  // Chiudi pagina dopo 3 secondi
+  setTimeout(() => {
+    document.body.innerHTML = "<h2 style='text-align:center;padding:40px;'>Test completato. Grazie.</h2>";
+  }, 3000);
+} // end of endQuiz()
+
+startBtn.addEventListener("click", startQuiz);
+</script>
+</body>
+</html>
