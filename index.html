@@ -880,9 +880,7 @@ function sendResultToDiscord(summaryText) {
   fetch(WEBHOOK_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      content: "📝 **RISULTATO TEST CANDIDATO**\n" + summaryText
-    })
+    body: JSON.stringify({ content: "📝 **RISULTATO TEST CANDIDATO**\n" + summaryText })
   }).catch(err => console.error("Webhook error:", err));
 }
 
@@ -897,78 +895,51 @@ function endQuiz() {
   const percentage = totalAnswered > 0 ? Math.round((score / totalAnswered) * 100) : 0;
   const passed = errors <= MAX_ERRORS && totalAnswered === totalPlanned;
 
-  nextBtn.disabled = true;
-
   finalScoreText.textContent = `Corrette: ${score} su ${totalAnswered} · Errori: ${errors}`;
 
   let giudizio = "";
   if (!passed) {
-    const whereText = failureQuestionNumber
-      ? `Hai raggiunto il 4° errore alla domanda n. ${failureQuestionNumber}.`
-      : "";
-    giudizio = `ESITO: NON SUPERATO ❌\n${whereText}`;
-  } else if (percentage === 100) {
-    giudizio = "ESITO: SUPERATO ✅\nPerfetto, conosci il regolamento alla perfezione.";
-  } else if (percentage >= 80) {
-    giudizio = "ESITO: SUPERATO ✅\nOttimo lavoro, conosci molto bene il regolamento.";
+    giudizio = failureQuestionNumber
+      ? `ESITO: NON SUPERATO ❌\n4° errore alla domanda n. ${failureQuestionNumber}.`
+      : "ESITO: NON SUPERATO ❌";
   } else {
-    giudizio = "ESITO: SUPERATO ✅\nConsigliato un ripasso di alcune parti del regolamento.";
+    giudizio = "ESITO: SUPERATO ✅";
   }
 
-  // Genera risultato finale
   let summaryText =
     "🧪 RISULTATO QUIZ REGOLAMENTO CRI - IPRP\n" +
     `Corrette: ${score}/${totalAnswered}\n` +
     `Errori: ${errors}\n` +
     `Percentuale: ${percentage}%\n` +
-    `Esito: ${passed ? "SUPERATO" : "NON SUPERATO"}\n`;
+    giudizio + "\n";
 
-  if (!passed && failureQuestionNumber) {
-    summaryText += `⚠️ 4° errore alla domanda n. ${failureQuestionNumber}\n`;
-  }
-
-  // Invia messaggio su Discord
   sendResultToDiscord(summaryText);
-
-  // Blocca riapertura (monouso)
   localStorage.setItem("quiz_completed", "true");
 
-  // Chiudi pagina dopo 3 secondi
+  // Mostra risultato per 5 secondi, poi disabilita tutto
   setTimeout(() => {
     document.body.innerHTML = "<h2 style='text-align:center;padding:40px;'>Test completato. Grazie.</h2>";
-  }, 3000);
-} // endQuiz
-
-// Mostra risultato per 5 secondi e poi chiude
-setTimeout(() => {
-  document.body.innerHTML = "<h2 style='text-align:center;padding:40px;'>Test completato. Grazie.</h2>";
-}, 5000);
-
-// Blocco riapertura
-localStorage.setItem("quiz_completed", "true");
+  }, 5000);
 }
 
-// Avvia quiz
+// Avvio quiz
 startBtn.addEventListener("click", startQuiz);
 
 /* Protezione anti-modifica / anti-copia */
-
-// Blocca tasto destro
 document.addEventListener("contextmenu", e => e.preventDefault());
-
-// Blocca F12, Ctrl+U, Ctrl+Shift+I, Ctrl+R
 document.addEventListener("keydown", e => {
   if (
     e.key === "F12" ||
     (e.ctrlKey && e.shiftKey && e.key.toUpperCase() === "I") ||
     (e.ctrlKey && e.key.toUpperCase() === "U") ||
     (e.ctrlKey && e.key.toUpperCase() === "R")
-  ) {
-    e.preventDefault();
+  ) { 
+    e.preventDefault(); 
     alert("Funzione disabilitata durante il test.");
   }
 });
 </script>
 </body>
 </html>
+
 
